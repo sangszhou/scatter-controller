@@ -6,10 +6,10 @@ import javax.websocket.MessageHandler;
 
 import com.alibaba.fastjson.JSON;
 
-import com.netflix.discovery.converters.Auto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import own.star.scatter.controller.domain.bean.Host;
 import own.star.scatter.controller.domain.msg.HostFinishMsg;
 import own.star.scatter.controller.domain.msg.HostReadyMsg;
@@ -22,7 +22,8 @@ import own.star.scatter.controller.executor.impl.HostExecutorInMemSync;
 import own.star.scatter.controller.mq.MqService;
 import own.star.scatter.controller.repository.HostService;
 
-public class HostHandler implements MessageHandler {
+@Service
+public class HostHandler implements MsgHandler {
     private Logger logger = LoggerFactory.getLogger(HostHandler.class);
 
     /**
@@ -34,6 +35,19 @@ public class HostHandler implements MessageHandler {
     HostService hostService;
     @Autowired
     MqService mqService;
+
+    @Override
+    public boolean support(Message msg) {
+        if (msg instanceof HostReadyMsg) {
+            return true;
+        } else if(msg instanceof HostFinishMsg) {
+            return true;
+        } else {
+            logger.error("host handler message type not found: {}", JSON.toJSONString(msg));
+            //logger.error("message type not found: {}", JSON.toJSON);
+        }
+        return false;
+    }
 
     public void onReceive(Message msg) {
         if (msg instanceof HostReadyMsg) {

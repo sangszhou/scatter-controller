@@ -7,10 +7,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
 import own.star.scatter.controller.domain.bean.Host;
 import own.star.scatter.controller.executor.ExecutorConstants;
 import own.star.scatter.controller.repository.HostService;
 
+@Service
 public class InMemHostService implements HostService {
 
     Map<String, Host> hostRepo = new HashMap<>();

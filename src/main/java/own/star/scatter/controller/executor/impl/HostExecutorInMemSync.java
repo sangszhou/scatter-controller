@@ -1,6 +1,5 @@
 package own.star.scatter.controller.executor.impl;
 
-import com.netflix.discovery.provider.Serializer;
 import org.springframework.stereotype.Service;
 import own.star.scatter.controller.domain.bean.Host;
 import own.star.scatter.controller.executor.ExeRequest;
