@@ -23,7 +23,7 @@ import own.star.scatter.controller.mq.MqService;
 import own.star.scatter.controller.repository.HostService;
 
 @Service
-public class HostHandler implements MsgHandler {
+public class HostHandler extends MsgHandler {
     private Logger logger = LoggerFactory.getLogger(HostHandler.class);
 
     /**
@@ -49,7 +49,8 @@ public class HostHandler implements MsgHandler {
         return false;
     }
 
-    public void onReceive(Message msg) {
+    @Override
+    public void doReceive(Message msg) {
         if (msg instanceof HostReadyMsg) {
             doReady((HostReadyMsg)msg);
         } else if(msg instanceof HostFinishMsg) {

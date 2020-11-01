@@ -1,5 +1,6 @@
 package own.star.scatter.controller.repository.impl;
 
+import java.rmi.server.ExportException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +8,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import brave.ScopedSpan;
+import brave.Tracer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import own.star.scatter.controller.domain.bean.Host;
 import own.star.scatter.controller.executor.ExecutorConstants;
@@ -16,6 +20,9 @@ import own.star.scatter.controller.repository.HostService;
 public class InMemHostService implements HostService {
 
     Map<String, Host> hostRepo = new HashMap<>();
+
+    @Autowired
+    Tracer tracer;
 
     @Override
     public List<Host> findHostByAppName(String appName) {
@@ -29,7 +36,14 @@ public class InMemHostService implements HostService {
 
     @Override
     public void storeHost(Host host) {
-        hostRepo.put(host.getId(), host);
+        ScopedSpan scopedSpan = tracer.startScopedSpan("storeHost");
+        try {
+            hostRepo.put(host.getId(), host);
+        } catch (Exception exp) {
+            scopedSpan.error(exp);
+        } finally {
+            scopedSpan.finish();
+        }
     }
 
     @Override
