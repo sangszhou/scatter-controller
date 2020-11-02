@@ -9,6 +9,8 @@ import java.util.concurrent.Executors;
 
 import com.alibaba.fastjson.JSON;
 
+import brave.Span;
+import brave.Tracer;
 import brave.Tracing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,8 @@ public class MqServiceImMem implements MqService {
 
     @Autowired
     Tracing tracing;
+    @Autowired
+    Tracer tracer;
 
     Queue<Message> msgQueue = new ArrayBlockingQueue<Message>(10000);
 
@@ -47,6 +51,7 @@ public class MqServiceImMem implements MqService {
                 .filter(handler -> handler.support(msg))
                 .findFirst();
 
+            // TODO msg 的解析应该在这了, 而不应该在 message handler 里, 这里需要重新改造一下
             if (handlerOpt.isPresent()) {
                 mqExecutor.execute(() -> {
                     handlerOpt.get().onReceive(msg);
@@ -61,12 +66,19 @@ public class MqServiceImMem implements MqService {
     public void sendMsg(Message msg) {
         // decorate msg with
         // 添加的字段什么时候才能搞出去嗯
+        // 怎么验证 inject 成功了呢?
+        Span span = tracer.nextSpan();
+
         tracing.propagation()
             .injector(MessageTracingUtils.msgSetter)
             .inject(tracing.currentTraceContext().get(), msg);
 
         msgQueue.add(msg);
 
+        span.kind(Span.Kind.PRODUCER)
+            .name("Mq.sendMsg")
+            .remoteServiceName("controller")
+            .start().finish();
     }
 
     @Override

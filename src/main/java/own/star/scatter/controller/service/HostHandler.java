@@ -38,15 +38,12 @@ public class HostHandler extends MsgHandler {
 
     @Override
     public boolean support(Message msg) {
-        if (msg instanceof HostReadyMsg) {
-            return true;
-        } else if(msg instanceof HostFinishMsg) {
+        if (msg instanceof HostReadyMsg ||
+            msg instanceof HostFinishMsg) {
             return true;
         } else {
-            logger.error("host handler message type not found: {}", JSON.toJSONString(msg));
-            //logger.error("message type not found: {}", JSON.toJSON);
+            return false;
         }
-        return false;
     }
 
     @Override
@@ -57,7 +54,6 @@ public class HostHandler extends MsgHandler {
             doFinish((HostFinishMsg)msg);
         } else {
             logger.error("host handler message type not found: {}", JSON.toJSONString(msg));
-            //logger.error("message type not found: {}", JSON.toJSON);
         }
     }
 
@@ -84,7 +80,9 @@ public class HostHandler extends MsgHandler {
         List<Host> hostListInThePlan = hostService.getHostByPlanId(planId);
         if (checkFinish(hostListInThePlan)) {
             // send
-            mqService.sendMsg(new PlanFinishMsg());
+            PlanFinishMsg planFinishMsg = new PlanFinishMsg();
+            planFinishMsg.setPlanId(planId);
+            mqService.sendMsg(planFinishMsg);
         }
     }
 

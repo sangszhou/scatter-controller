@@ -15,7 +15,11 @@ public class MessageTracingUtils {
     public static final Getter<Message, String> msgGetter = new Getter<Message, String>() {
         @Override
         public String get(Message carrier, String key) {
-            return carrier.getHeader().get(key).toString();
+            if (carrier.getHeader().containsKey(key)) {
+                return carrier.getHeader().get(key).toString();
+            } else {
+                return null;
+            }
         }
     };
 

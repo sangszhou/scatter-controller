@@ -2,6 +2,7 @@ package own.star.scatter.controller.repository.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import brave.ScopedSpan;
 import brave.Tracer;
@@ -37,6 +38,9 @@ public class PlanServiceImMem implements PlanService {
     public Plan getById(String planId) {
         ScopedSpan scopedSpan = tracer.startScopedSpan("PlanService.getById");
         try {
+            if (new Random().nextInt(10) < 5) {
+                throw new RuntimeException("intented error");
+            }
             return planMap.get(planId);
         } catch (Exception exp) {
             logger.error("get by id exception, plan id: {}", planId, exp);
