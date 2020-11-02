@@ -21,7 +21,7 @@ import own.star.scatter.controller.repository.HostService;
 import own.star.scatter.controller.repository.PlanService;
 
 @Service
-public class PlanHandler implements MsgHandler {
+public class PlanHandler extends MsgHandler {
     private Logger logger = LoggerFactory.getLogger(PlanHandler.class);
 
     @Autowired
@@ -40,7 +40,8 @@ public class PlanHandler implements MsgHandler {
         return false;
     }
 
-    public void onReceive(Message msg) {
+    @Override
+    public void doReceive(Message msg) {
         if (msg instanceof PlanReadyMsg) {
             doReady((PlanReadyMsg)msg);
         } else if(msg instanceof PlanFinishMsg) {
@@ -78,6 +79,7 @@ public class PlanHandler implements MsgHandler {
     }
 
     public void doFinish(PlanFinishMsg finishMsg) {
+
         Plan plan = planService.getById(finishMsg.getPlanId());
         plan.setStatus(ExecutorConstants.SUCCESS);
         planService.storePlan(plan);

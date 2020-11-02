@@ -26,17 +26,25 @@ public class InMemHostService implements HostService {
 
     @Override
     public List<Host> findHostByAppName(String appName) {
-        int id = new Random().nextInt(998);
-        int nextId = id + 1;
-        return Arrays.asList(
-            new Host("id_" + id, "name_" + id),
-            new Host("id_" + nextId, "name_" + nextId)
-        );
+        ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.findHostByAppName");
+        try {
+            int id = new Random().nextInt(998);
+            int nextId = id + 1;
+            return Arrays.asList(
+                new Host("id_" + id, "name_" + id),
+                new Host("id_" + nextId, "name_" + nextId)
+            );
+        } catch (Exception exp) {
+            scopedSpan.error(exp);
+            return null;
+        } finally {
+            scopedSpan.finish();
+        }
     }
 
     @Override
     public void storeHost(Host host) {
-        ScopedSpan scopedSpan = tracer.startScopedSpan("storeHost");
+        ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.storeHost");
         try {
             hostRepo.put(host.getId(), host);
         } catch (Exception exp) {
@@ -48,41 +56,69 @@ public class InMemHostService implements HostService {
 
     @Override
     public Host getHostByHostId(String hostId) {
-        return hostRepo.get(hostId);
+        ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.getHostByHostId");
+        try {
+            return hostRepo.get(hostId);
+        } catch (Exception exp) {
+            scopedSpan.error(exp);
+            return null;
+        } finally {
+            scopedSpan.finish();
+        }
     }
 
     @Override
     public List<Host> getHostByPlanId(String planId) {
-        return hostRepo.values()
-            .stream()
-            .filter(host -> host.getPlanId().equalsIgnoreCase(planId))
-            .collect(Collectors.toList());
+        ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.getHostByPlanId");
+        try {
+            return hostRepo.values()
+                .stream()
+                .filter(host -> host.getPlanId().equalsIgnoreCase(planId))
+                .collect(Collectors.toList());
+        } catch (Exception exp) {
+            scopedSpan.error(exp);
+            return null;
+        } finally {
+            scopedSpan.finish();
+        }
     }
 
     @Override
     public void statusToRunning(Host host) {
-        hostRepo.get(host.getId()).setStatus(ExecutorConstants.RUNNING);
+        ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.statusToRunning");
+        try {
+            hostRepo.get(host.getId()).setStatus(ExecutorConstants.RUNNING);
+        } catch (Exception exp) {
+            scopedSpan.error(exp);
+        } finally {
+            scopedSpan.finish();
+        }
     }
 
     @Override
     public void statusToSuccess(Host host) {
-        hostRepo.get(host.getId()).setStatus(ExecutorConstants.SUCCESS);
-
+        statusTo(host, ExecutorConstants.SUCCESS);
     }
 
     @Override
     public void statusToFail(Host host) {
-        hostRepo.get(host.getId()).setStatus(ExecutorConstants.FAIL);
-
+        statusTo(host, ExecutorConstants.FAIL);
     }
 
     @Override
     public void statusToWait(Host host) {
-        hostRepo.get(host.getId()).setStatus(ExecutorConstants.WAIT);
+        statusTo(host, ExecutorConstants.WAIT);
     }
 
     @Override
     public void statusTo(Host host, String status) {
-        hostRepo.get(host.getId()).setStatus(status);
+        ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.statusTo");
+        try {
+            hostRepo.get(host.getId()).setStatus(status);
+        } catch (Exception exp) {
+            scopedSpan.error(exp);
+        } finally {
+            scopedSpan.finish();
+        }
     }
 }

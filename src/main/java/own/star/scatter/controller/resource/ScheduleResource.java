@@ -35,10 +35,11 @@ public class ScheduleResource {
         planReadyMsg.setAppName(appName);
 
         // 和 Span 的区别是, 是否在一个线程中, 是否能够 close 掉它
-        ScopedSpan scopedSpan = tracer.startScopedSpan("sendMsg");
-        scopedSpan.tag("planId", planReadyMsg.getPlanId());
-        scopedSpan.tag("planName", planReadyMsg.getPlanName());
-        scopedSpan.tag("appName", planReadyMsg.getAppName());
+        ScopedSpan scopedSpan = tracer
+            .startScopedSpan("ScheduleResource.create")
+            .tag("planId", planReadyMsg.getPlanId())
+            .tag("planName", planReadyMsg.getPlanName())
+            .tag("appName", planReadyMsg.getAppName());
 
         try {
             mqService.sendMsg(planReadyMsg);

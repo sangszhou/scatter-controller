@@ -7,20 +7,22 @@ import org.springframework.cloud.sleuth.zipkin2.DefaultZipkinRestTemplateCustomi
 import org.springframework.cloud.sleuth.zipkin2.ZipkinProperties;
 import org.springframework.cloud.sleuth.zipkin2.ZipkinRestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
 
+@Configuration
 public class TraceConfig {
 
-    @Bean
-    public ZipkinRestTemplateCustomizer myCustomizer() {
-        ZipkinProperties zipkinProperties = new ZipkinProperties();
-        zipkinProperties.setBaseUrl("http://localhost:9411/");
-        return new DefaultZipkinRestTemplateCustomizer(zipkinProperties);
-    }
+    //@Bean
+    //public ZipkinRestTemplateCustomizer myCustomizer() {
+    //    ZipkinProperties zipkinProperties = new ZipkinProperties();
+    //    zipkinProperties.setBaseUrl("http://localhost:9411/");
+    //    return new DefaultZipkinRestTemplateCustomizer(zipkinProperties);
+    //}
 
     // sender 查看 ZipkinRestTemplateSenderConfiguration,
     // 如果没有的话, 那就去找 sender configuration
@@ -46,11 +48,12 @@ public class TraceConfig {
      * 1. 采用默认的日志 reporter (如果要渲染 UI, 需要 async http reporter)
      * @return
      */
-    @Bean
-    public Tracing globalTracing() {
-        Tracing tracing = Tracing.newBuilder()
-            .localServiceName("scatter-controller")
-            .build();
-        return tracing;
-    }
+    //@Bean
+    //public Tracing globalTracing() {
+    //    Tracing tracing = Tracing.newBuilder()
+    //        .localServiceName("scatter-controller")
+    //        .repo
+    //        .build();
+    //    return tracing;
+    //}
 }
