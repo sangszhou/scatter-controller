@@ -26,13 +26,14 @@ public class ScheduleResource {
     Tracing tracing;
 
     @RequestMapping("/create")
-    public RestResponse<String> createPlan(String planName, String appName) {
+    public RestResponse<String> createPlan(String planName, String appName, int totalBatchNum) {
         Tracer tracer = tracing.tracer();
 
         PlanReadyMsg planReadyMsg = new PlanReadyMsg();
         planReadyMsg.setPlanId("plan_" + new Random().nextInt(999));
         planReadyMsg.setPlanName(planName);
         planReadyMsg.setAppName(appName);
+        planReadyMsg.setTotalBatchNum(totalBatchNum);
 
         // 和 Span 的区别是, 是否在一个线程中, 是否能够 close 掉它
         ScopedSpan scopedSpan = tracer

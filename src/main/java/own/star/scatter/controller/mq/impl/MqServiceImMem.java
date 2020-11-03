@@ -39,7 +39,7 @@ public class MqServiceImMem implements MqService {
 
     Queue<Message> msgQueue = new ArrayBlockingQueue<Message>(10000);
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 300)
     public void schedule() {
         Message msg = msgQueue.peek();
         if (msg != null) {
@@ -76,7 +76,7 @@ public class MqServiceImMem implements MqService {
         msgQueue.add(msg);
 
         span.kind(Span.Kind.PRODUCER)
-            .name("Mq.sendMsg")
+            .name("Mq.sendMsg: [" + msg.getClass().getSimpleName() + "]")
             .remoteServiceName("controller")
             .start().finish();
     }

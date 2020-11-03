@@ -3,6 +3,7 @@ package own.star.scatter.controller.repository.impl;
 import java.rmi.server.ExportException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -27,13 +28,16 @@ public class InMemHostService implements HostService {
     @Override
     public List<Host> findHostByAppName(String appName) {
         ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.findHostByAppName");
+        scopedSpan.tag("appName", appName);
+        List<Host> result = new LinkedList<>();
         try {
             int id = new Random().nextInt(998);
-            int nextId = id + 1;
-            return Arrays.asList(
-                new Host("id_" + id, "name_" + id),
-                new Host("id_" + nextId, "name_" + nextId)
-            );
+
+            for (int i = 0; i < 6; i++) {
+                result.add(new Host("id_" + id+i, "name_" + id+i));
+            }
+
+            return result;
         } catch (Exception exp) {
             scopedSpan.error(exp);
             return null;
@@ -45,6 +49,7 @@ public class InMemHostService implements HostService {
     @Override
     public void storeHost(Host host) {
         ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.storeHost");
+        scopedSpan.tag("hostId", host.getId());
         try {
             hostRepo.put(host.getId(), host);
         } catch (Exception exp) {
@@ -57,6 +62,7 @@ public class InMemHostService implements HostService {
     @Override
     public Host getHostByHostId(String hostId) {
         ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.getHostByHostId");
+        scopedSpan.tag("hostId", hostId);
         try {
             return hostRepo.get(hostId);
         } catch (Exception exp) {
@@ -70,6 +76,7 @@ public class InMemHostService implements HostService {
     @Override
     public List<Host> getHostByPlanId(String planId) {
         ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.getHostByPlanId");
+        scopedSpan.tag("planId", planId);
         try {
             return hostRepo.values()
                 .stream()
@@ -86,6 +93,7 @@ public class InMemHostService implements HostService {
     @Override
     public void statusToRunning(Host host) {
         ScopedSpan scopedSpan = tracer.startScopedSpan("HostService.statusToRunning");
+        scopedSpan.tag("hostId", host.getId());
         try {
             hostRepo.get(host.getId()).setStatus(ExecutorConstants.RUNNING);
         } catch (Exception exp) {

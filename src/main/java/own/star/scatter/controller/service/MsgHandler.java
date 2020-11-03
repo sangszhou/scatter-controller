@@ -43,10 +43,12 @@ public abstract class MsgHandler {
         // 我没理解其中的意思, 但是我明确一点, 就是 span finish 以后, 后续的 span 就断开了, 所以
         // 这里我就先不让其结束
 
-        ScopedSpan scopedSpan = tracer.startScopedSpanWithParent("Mq.onReceive", result.context());
+        ScopedSpan scopedSpan = tracer
+            .startScopedSpanWithParent("Mq.onReceive[" + msg.getClass().getSimpleName() + "]", result.context());
 
         try {
             doReceive(msg);
+
         } catch (Exception exp) {
             scopedSpan.error(exp);
             throw exp;
