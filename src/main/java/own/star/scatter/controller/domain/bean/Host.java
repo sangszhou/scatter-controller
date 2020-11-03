@@ -6,6 +6,7 @@ public class Host {
     String id;
     String planId;
     String hostName;
+    Integer batchNum;
 
     Date startTime = new Date(System.currentTimeMillis());
     Date finishTime;
@@ -19,6 +20,14 @@ public class Host {
         this.planId = planId;
         this.hostName = hostName;
         this.startTime = startTime;
+    }
+
+    public Integer getBatchNum() {
+        return batchNum;
+    }
+
+    public void setBatchNum(Integer batchNum) {
+        this.batchNum = batchNum;
     }
 
     public String getPlanId() {

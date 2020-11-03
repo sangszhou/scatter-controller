@@ -1,6 +1,7 @@
 package own.star.scatter.controller.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.websocket.MessageHandler;
 
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import own.star.scatter.controller.domain.bean.Host;
+import own.star.scatter.controller.domain.msg.BatchFinishMsg;
 import own.star.scatter.controller.domain.msg.HostFinishMsg;
 import own.star.scatter.controller.domain.msg.HostReadyMsg;
 import own.star.scatter.controller.domain.msg.Message;
@@ -77,12 +79,17 @@ public class HostHandler extends MsgHandler {
     public void doFinish(HostFinishMsg hostFinishMsg) {
         Host theHost = hostService.getHostByHostId(hostFinishMsg.getId());
         String planId = theHost.getPlanId();
-        List<Host> hostListInThePlan = hostService.getHostByPlanId(planId);
-        if (checkFinish(hostListInThePlan)) {
-            // send
-            PlanFinishMsg planFinishMsg = new PlanFinishMsg();
-            planFinishMsg.setPlanId(planId);
-            mqService.sendMsg(planFinishMsg);
+        List<Host> hostListInBatch = hostService
+            .getHostByPlanId(planId)
+            .stream().filter(host -> host.getBatchNum() == theHost.getBatchNum())
+            .collect(Collectors.toList());
+
+        if (checkFinish(hostListInBatch)) {
+            BatchFinishMsg batchFinishMsg = new BatchFinishMsg();
+            batchFinishMsg.setBatchNum(theHost.getBatchNum());
+            batchFinishMsg.setPlanId(planId);
+            batchFinishMsg.setMsg(ExecutorConstants.SUCCESS);
+            mqService.sendMsg(batchFinishMsg);
         }
     }
 

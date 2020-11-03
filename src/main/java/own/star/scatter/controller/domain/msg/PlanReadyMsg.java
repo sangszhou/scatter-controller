@@ -4,6 +4,15 @@ public class PlanReadyMsg extends Message {
     String planId;
     String planName;
     String appName;
+    int totalBatchNum;
+
+    public int getTotalBatchNum() {
+        return totalBatchNum;
+    }
+
+    public void setTotalBatchNum(int totalBatchNum) {
+        this.totalBatchNum = totalBatchNum;
+    }
 
     public String getPlanId() {
         return planId;

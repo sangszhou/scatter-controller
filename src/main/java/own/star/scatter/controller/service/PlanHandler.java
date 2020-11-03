@@ -5,12 +5,14 @@ import java.util.List;
 
 import com.alibaba.fastjson.JSON;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import own.star.scatter.controller.domain.bean.Host;
 import own.star.scatter.controller.domain.bean.Plan;
+import own.star.scatter.controller.domain.msg.BatchReadyMsg;
 import own.star.scatter.controller.domain.msg.HostReadyMsg;
 import own.star.scatter.controller.domain.msg.Message;
 import own.star.scatter.controller.domain.msg.PlanFinishMsg;
@@ -60,22 +62,23 @@ public class PlanHandler extends MsgHandler {
         plan.setStatus(ExecutorConstants.RUNNING);
         planService.storePlan(plan);
 
-        hostList.stream().forEach(
-            host -> {
+        // split and set batch number
+        List<List<Host>> batchedHostList = partition(hostList, readyMsg.getTotalBatchNum());
+
+        batchedHostList.stream().forEach(
+            oneBatchHostList -> oneBatchHostList.stream().forEach(host -> {
                 host.setPlanId(readyMsg.getPlanId());
                 host.setStartTime(new Date(System.currentTimeMillis()));
-                host.setStatus(ExecutorConstants.RUNNING);
+                host.setStatus(ExecutorConstants.WAIT);
                 hostService.storeHost(host);
-
-                HostReadyMsg hostReadyMsg = new HostReadyMsg();
-                hostReadyMsg.setId(host.getId());
-                hostReadyMsg.setHostName(host.getHostName());
-
-                mqService.sendMsg(hostReadyMsg);
-
-            }
+            })
         );
 
+        // trigger
+        BatchReadyMsg batchReadyMsg = new BatchReadyMsg();
+        batchReadyMsg.setPlanId(readyMsg.getPlanId());
+        batchReadyMsg.setBatchNum(0);
+        mqService.sendMsg(batchReadyMsg);
     }
 
     public void doFinish(PlanFinishMsg finishMsg) {
@@ -91,4 +94,25 @@ public class PlanHandler extends MsgHandler {
         return hostList;
     }
 
+    /**
+     * split host into sub list, and tag each
+     * @param hostList
+     */
+    public List<List<Host>> partition(List<Host> hostList, int totalBatchNum) {
+        int hostNumInBatch = hostList.size() / totalBatchNum;
+        List<List<Host>> partitionedHostList = Lists.partition(hostList, hostNumInBatch);
+        // 把最后一批的机器和第一批组合
+        if (hostList.size() % totalBatchNum != 0) {
+            List<Host> lastBatch = partitionedHostList.remove(partitionedHostList.size() - 1);
+            partitionedHostList.get(0).addAll(lastBatch);
+        }
+
+        // 打上批次的标号
+        for (int i = 0; i < partitionedHostList.size(); i ++) {
+            int batchNum = i;
+            partitionedHostList.get(batchNum)
+                .forEach(host -> host.setBatchNum(batchNum));
+        }
+        return partitionedHostList;
+    }
 }
